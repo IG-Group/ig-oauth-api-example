@@ -1,0 +1,16 @@
+server:
+  port: 8686
+  servlet:
+    context-path: /api-vendor-sample
+
+# Override if the redirect server url should not match http://<InetAddress.getLocalHost().getHostName()>:<server.port>
+redirect.server.url:
+
+# OAuth client details
+ig:
+  oauth:
+    server: https://<OAuth server url>/openam
+    realm: <OAuth realm>
+    client:
+      id: <OAuth client ID>
+      secret: <OAuth client secret>
