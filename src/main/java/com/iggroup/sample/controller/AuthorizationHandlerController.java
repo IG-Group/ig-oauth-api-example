@@ -1,6 +1,5 @@
 package com.iggroup.sample.controller;
 
-import com.iggroup.sample.service.OAuthClient;
 import com.iggroup.sample.service.OAuthSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 @Slf4j
 public class AuthorizationHandlerController {
 
-   private final OAuthClient oAuthClient;
    private final OAuthSession oAuthSession;
 
    @Autowired
-   public AuthorizationHandlerController(OAuthClient oAuthClient, OAuthSession oAuthSession) {
-      this.oAuthClient = oAuthClient;
+   public AuthorizationHandlerController(OAuthSession oAuthSession) {
       this.oAuthSession = oAuthSession;
    }
 
