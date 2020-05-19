@@ -2,8 +2,6 @@ package com.iggroup.sample.controller;
 
 import com.iggroup.sample.service.OAuthClient;
 import com.iggroup.sample.service.OAuthSession;
-import com.iggroup.sample.service.dto.AccessTokenResponse;
-import com.iggroup.sample.service.dto.UserInformationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -41,19 +39,6 @@ public class AuthorizationHandlerController {
       }
       log.info("Received authorization code={}", authorizationCode);
 
-      AccessTokenResponse accessTokenResponse = oAuthClient.getAccessToken(authorizationCode);
-      log.info("Access token response for authorization code={}: {}", authorizationCode, accessTokenResponse);
-
-      String accessToken = accessTokenResponse.getAccess_token();
-      UserInformationResponse userInformationResponse = oAuthClient.getUserInformation(accessToken);
-      log.info("User information for access token={}: {}", accessToken, userInformationResponse);
-
-      // Store refresh token
-      String clientId = userInformationResponse.getSub();
-      String refreshToken = accessTokenResponse.getRefresh_token();
-      String expiresIn = accessTokenResponse.getExpires_in();
-
-      httpResponse.sendRedirect(String.format("%s?access_token=%s&refresh_token=%s&client_id=%s",
-                                              redirectUri, accessToken, refreshToken, clientId));
+      httpResponse.sendRedirect(String.format("%s?code=%s", redirectUri, authorizationCode));
    }
 }

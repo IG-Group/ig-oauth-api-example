@@ -3,6 +3,9 @@ package com.iggroup.sample.controller;
 import com.iggroup.sample.service.OAuthClient;
 import com.iggroup.sample.service.OAuthSession;
 import com.iggroup.sample.service.dto.AccessTokenResponse;
+import com.iggroup.sample.service.dto.AuthorizationCodeRequest;
+import com.iggroup.sample.service.dto.TokenResponse;
+import com.iggroup.sample.service.dto.UserInformationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -10,17 +13,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @Slf4j
-public class OAuthController {
+public class OAuth2Controller {
 
    private final OAuthClient oAuthClient;
    private final OAuthSession oAuthSession;
@@ -30,7 +37,7 @@ public class OAuthController {
    private final String realm;
 
    @Autowired
-   public OAuthController(OAuthClient oAuthClient,
+   public OAuth2Controller(OAuthClient oAuthClient,
                           OAuthSession oAuthSession,
                           @Qualifier(value = "redirect.base.url") String redirectBaseUrl,
                           @Value("${ig.oauth.server}") String oAuthServerUrl,
@@ -45,7 +52,8 @@ public class OAuthController {
       this.realm = realm;
    }
 
-   @RequestMapping("/oauth-provider")
+   @CrossOrigin
+   @RequestMapping("/oauth2/authorize")
    public void oauth2ProviderRedirection(@RequestParam MultiValueMap<String, String> queryParameters, HttpServletResponse httpResponse)
       throws IOException {
 
@@ -64,13 +72,42 @@ public class OAuthController {
    }
 
    @CrossOrigin
-   @GetMapping("/refresh-token")
-   public AccessTokenResponse refreshToken(@RequestParam MultiValueMap<String, String> queryParameters) throws Exception {
+   @PostMapping("/oauth2/token")
+   public TokenResponse accessToken(@RequestBody AuthorizationCodeRequest authorizationCodeRequest, HttpServletResponse response) throws Exception {
+      String authorizationCode = authorizationCodeRequest.getCode();
+
+      AccessTokenResponse accessTokenResponse = oAuthClient.getAccessToken(authorizationCode);
+      log.info("Access token response for authorization code={}: {}", authorizationCode, accessTokenResponse);
+
+      String accessToken = accessTokenResponse.getAccess_token();
+      UserInformationResponse userInformationResponse = oAuthClient.getUserInformation(accessToken);
+      log.info("User information for access token={}: {}", accessToken, userInformationResponse);
+
+      // Store refresh token
+      String clientId = userInformationResponse.getSub();
+      String refreshToken = accessTokenResponse.getRefresh_token();
+      String expiresIn = accessTokenResponse.getExpires_in();
+
+      final Cookie cookie = new Cookie("refreshToken", refreshToken);
+      cookie.setSecure(true);
+      cookie.setHttpOnly(true);
+      cookie.setMaxAge((int)TimeUnit.DAYS.toSeconds(3));
+      response.addCookie(cookie);
+
+      return new TokenResponse(accessToken, expiresIn);
+   }
+
+   @CrossOrigin
+   @GetMapping("/oauth2/refresh")
+   public TokenResponse refreshToken(@RequestParam MultiValueMap<String, String> queryParameters) throws Exception {
       String refreshToken = queryParameters.getFirst("refresh_token");
 
       AccessTokenResponse accessTokenResponse = oAuthClient.refreshAccessToken(refreshToken);
       log.info("Access token response: {}", accessTokenResponse);
 
-      return accessTokenResponse;
+      String accessToken = accessTokenResponse.getAccess_token();
+      String expiresIn = accessTokenResponse.getExpires_in();
+
+      return new TokenResponse(accessToken, expiresIn);
    }
 }
