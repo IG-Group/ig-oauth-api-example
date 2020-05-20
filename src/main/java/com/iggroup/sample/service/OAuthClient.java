@@ -14,6 +14,7 @@ import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.Base64;
 
 @Service
@@ -71,12 +72,16 @@ public class OAuthClient {
 
       ClientResponse response = this.webClient
          .post()
-         .uri(uriBuilder -> uriBuilder
-            .path("/oauth2/access_token")
-            .queryParam("grant_type", "refresh_token")
-            .queryParam("refresh_token", refreshToken)
-            .queryParam("realm", realm)
-            .build()
+         .uri(uriBuilder -> {
+                URI build = uriBuilder
+                    .path("/oauth2/access_token")
+                    .queryParam("grant_type", "refresh_token")
+                    .queryParam("refresh_token", refreshToken)
+                    .queryParam("realm", realm)
+                    .build();
+                log.info("Requesting new access token with {} {}", refreshToken, build);
+                return build;
+             }
          )
          .header(HttpHeaders.AUTHORIZATION, this.authorizationHeader)
          .exchange()

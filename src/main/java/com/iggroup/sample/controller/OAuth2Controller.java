@@ -39,6 +39,8 @@ public class OAuth2Controller {
    private final String oAuthServerUrl;
    private final String clientId;
    private final String realm;
+  @Value("${spring.profiles.active}")
+  private String profile;
 
    @Autowired
    public OAuth2Controller(OAuthClient oAuthClient,
@@ -78,7 +80,6 @@ public class OAuth2Controller {
       httpResponse.sendRedirect(url + params);
    }
 
-   @CrossOrigin
    @PostMapping("/oauth2/token")
    public TokenResponse accessToken(@RequestBody AuthorizationCodeRequest authorizationCodeRequest, HttpServletResponse response) {
       try {
@@ -105,12 +106,11 @@ public class OAuth2Controller {
       }
    }
 
-   @CrossOrigin
    @GetMapping("/oauth2/refresh")
    public TokenResponse refreshToken(@CookieValue(name = "refreshToken") String refreshToken, HttpServletResponse response) {
       try {
          AccessTokenResponse accessTokenResponse = oAuthClient.refreshAccessToken(refreshToken);
-         log.info("Access token response: {}", accessTokenResponse);
+         log.info("Refresh token response: {}", accessTokenResponse);
 
          String accessToken = accessTokenResponse.getAccess_token();
          String expiresIn = accessTokenResponse.getExpires_in();
@@ -126,9 +126,12 @@ public class OAuth2Controller {
 
    private Cookie createCookie(String refreshToken) {
       final Cookie cookie = new Cookie("refreshToken", refreshToken);
-      cookie.setSecure(true);
+      cookie.setPath("/");
       cookie.setHttpOnly(true);
       cookie.setMaxAge((int) TimeUnit.DAYS.toSeconds(3));
+      if (!this.profile.equals("dev")) {
+        cookie.setSecure(true);
+      }
       return cookie;
    }
 }

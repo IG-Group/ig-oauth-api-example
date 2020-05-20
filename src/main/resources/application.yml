@@ -3,6 +3,8 @@ server:
   servlet:
     context-path: /api-vendor-sample
 
+allowedOrigins: <CORS whitelist>
+
 # Override if the redirect server url should not match http://<InetAddress.getLocalHost().getHostName()>:<server.port>
 redirect.server.url:
 
