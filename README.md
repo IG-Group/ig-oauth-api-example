@@ -21,14 +21,23 @@ This will create a Spring Boot executable jar file. To start the web application
 
 ### Endpoints
 
-The application exposes two endpoints:
+The application exposes 3 endpoints:
 
-    GET /oauth-provider?redirect_uri=<URI>
+    GET /oauth2/authorize?redirect_uri=<URI>
 The frontend application should be redirected to this endpoint to get access_token, refresh_token and client_id from OAuth2 provider.
 The requested query parameter is the redirection URL to which the server will send tokens and client ID.
 
-    GET /refresh-token?refresh_token=<TOKEN>
-The endpoint for generating new tokens based on refresh token provided in query parameter.
+    POST /oauth2/token { code: <generated code from successful redirect> } 
+After successfully redirecting, in order to finally receive an access token, request with code in body of request.
+The response is as follows:
+
+    { access_token: string, expires_in: string }
+    Set-Cookie: refreshToken=string
+     
+Notice the refreshToken as a cookie header in response. this is a **private** cookie that the browser must attach to refresh tokens.
+
+    GET /oauth2/refresh
+The endpoint for generating new tokens based on refresh token. The refresh token is served once again in a private cookie.
     
 ### Communication with OAuth provider
 
