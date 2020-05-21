@@ -18,7 +18,6 @@ public class Application {
    public WebMvcConfigurer corsConfigurer() {
       return new WebMvcConfigurer() {
          @Value("${allowedOrigins}") String allowedOrigins;
-         @Value("${server.servlet.context-path}") String contextPath;
 
          @Override
          public void addCorsMappings(CorsRegistry registry) {
