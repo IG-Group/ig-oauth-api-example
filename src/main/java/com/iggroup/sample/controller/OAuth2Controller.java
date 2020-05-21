@@ -115,7 +115,7 @@ public class OAuth2Controller {
          String accessToken = accessTokenResponse.getAccess_token();
          String expiresIn = accessTokenResponse.getExpires_in();
 
-         response.addCookie(createCookie(refreshToken));
+         response.addCookie(createCookie(accessTokenResponse.getRefresh_token()));
          return new TokenResponse(accessToken, expiresIn);
 
       } catch (Exception e) {
