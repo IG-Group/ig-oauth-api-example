@@ -18,6 +18,9 @@ Use maven 3 or later to build the project:
 This will create a Spring Boot executable jar file. To start the web application:
 
     java -jar target/ig-oauth-server-example-0.0.1-SNAPSHOT.jar
+    
+### Frontend example
+You can visit an example application that uses this service: [frontend](https://github.com/IG-Group/fix-ws-client-example)
 
 ### Endpoints
 
@@ -27,7 +30,8 @@ The application exposes 3 endpoints:
 The frontend application should be redirected to this endpoint to get access_token, refresh_token and client_id from OAuth2 provider.
 The requested query parameter is the redirection URL to which the server will send tokens and client ID.
 
-    POST /oauth2/token { code: <generated code from successful redirect> } 
+    POST /oauth2/token { code: <generated code from successful redirect> }
+ 
 After successfully redirecting, in order to finally receive an access token, request with code in body of request.
 The response is as follows:
 
@@ -37,6 +41,7 @@ The response is as follows:
 Notice the refreshToken as a cookie header in response. this is a **private** cookie that the browser must attach to refresh tokens.
 
     GET /oauth2/refresh
+
 The endpoint for generating new tokens based on refresh token. The refresh token is served once again in a private cookie.
     
 ### Communication with OAuth provider
