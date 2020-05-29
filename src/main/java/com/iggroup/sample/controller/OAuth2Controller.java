@@ -39,8 +39,7 @@ public class OAuth2Controller {
    private final String oAuthServerUrl;
    private final String clientId;
    private final String realm;
-  @Value("${spring.profiles.active}")
-  private String profile;
+   private final boolean shouldSecureCookie;
 
    @Autowired
    public OAuth2Controller(OAuthClient oAuthClient,
@@ -48,7 +47,8 @@ public class OAuth2Controller {
                           @Qualifier(value = "redirect.base.url") String redirectBaseUrl,
                           @Value("${ig.oauth.server}") String oAuthServerUrl,
                           @Value("${ig.oauth.client.id}") String clientId,
-                          @Value("${ig.oauth.realm}") String realm) {
+                          @Value("${ig.oauth.realm}") String realm,
+                          @Value("${redirect.cookie.secure}") boolean shouldSecureCookie) {
 
       this.oAuthClient = oAuthClient;
       this.oAuthSession = oAuthSession;
@@ -56,6 +56,7 @@ public class OAuth2Controller {
       this.oAuthServerUrl = oAuthServerUrl;
       this.clientId = clientId;
       this.realm = realm;
+      this.shouldSecureCookie=shouldSecureCookie;
    }
 
    @CrossOrigin
@@ -129,9 +130,7 @@ public class OAuth2Controller {
       cookie.setPath("/");
       cookie.setHttpOnly(true);
       cookie.setMaxAge((int) TimeUnit.DAYS.toSeconds(3));
-      if (!this.profile.equals("dev")) {
-        cookie.setSecure(true);
-      }
+      cookie.setSecure(shouldSecureCookie);
       return cookie;
    }
 }

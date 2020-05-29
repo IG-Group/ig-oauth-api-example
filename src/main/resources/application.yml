@@ -7,7 +7,8 @@ allowedOrigins: <CORS whitelist>
 
 # Override if the redirect server url should not match http://<InetAddress.getLocalHost().getHostName()>:<server.port>
 redirect.server.url:
-
+#set to false for local development
+redirect.cookie.secure: true
 # OAuth client details
 ig:
   oauth:
